@@ -1,6 +1,10 @@
 Building a socket server in C is a great introduction to the language as well as IPC mechanisms such as sockets and it can show you how simple it is to set up a server.  For this installment, we're going to do a single-threaded version.
 
-First, I want to define some constants that we'll use throughout. For some of these you may want to pass these in dynamically, but for this case I'm just hardcoding them here as constants:
+So, let's get started...
+
+### The Server
+
+First I want to define some constants that we'll use throughout. For some of these you may want to pass these in dynamically, but for this case I'm just hardcoding them here as constants:
 
 ```
 #define SOCKET_ERROR  -1
@@ -26,7 +30,7 @@ if ( (server_socket_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) <= SOCKET_ER
 }
 ```
 
-Set the socket options, passing in the newly created socket file descriptor.  Additionally, 
+Set the socket options, passing in the newly created socket file descriptor.  Additionally,
 
 ```
 int sockopt;
@@ -76,9 +80,9 @@ for (;;) {
   int client;
   struct sockaddr_in client_address;
   socklen_t client_len;
-  
+
   client_len = sizeof(client_address);
-  
+
   // Accept incoming connections from the client
   if ( (client = accept(server_socket_fd, (struct sockaddr *) &client_address, &client_len)) <= SOCKET_ERROR ) {
     perror("Error accepting on the server socket");
@@ -94,13 +98,20 @@ for (;;) {
   ssize_t sender;
   char response[BUFSIZE];
   size_t len;
-  
+
   strcpy(response, "This is a response string!");
   len = strlen(response);
-  
+
   if ( (sender = send(client, response, len, 0)) <= SOCKET_ERROR ) {
     perror("Error sending the response");
   }
   fprintf(stdout, "Successfully sent (%i) message", sender);
 }
 ```
+
+Go ahead, build it, and fire it up and send a curl request.  In a future post, I'll build an HTTP server.
+
+The source code for this can be found here: <https://github.com/ralucas/basic_c_socket_server>
+
+I also suggest taking a look at [Beej's Guide to Networking](http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html)
+
