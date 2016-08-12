@@ -21,6 +21,7 @@ void serve() {
   int server_socket_fd;
   if ((server_socket_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) <= SOCKET_ERROR) {
     perror("Error creating the server socket");
+    exit(errno);
   }
   fprintf(stdout, "Server (%i) socket created\n", server_socket_fd);
 
@@ -28,6 +29,7 @@ void serve() {
   int sockopt = 1;
   if ((socket_opts = setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(int))) <= SOCKET_ERROR) {
     perror("Error setting the socket options");
+    exit(errno);
   }
   fprintf(stdout, "Socket options (%i) set\n", socket_opts);
 
@@ -45,12 +47,14 @@ void serve() {
   int server;
   if ((server = bind(server_socket_fd, (struct sockaddr *) &socket_address, sizeof(socket_address))) <= SOCKET_ERROR) {
     perror("Error binding the server");
+    exit(errno);
   }
   fprintf(stdout, "Server (%i) bound\n", server);
 
   int connection_listener;
   if ((connection_listener = listen(server_socket_fd, MAX_PENDING_CONNECTIONS)) <= SOCKET_ERROR) {
     perror("Error connecting the listener");
+    exit(errno);
   }
   fprintf(stdout, "Server listening to connection (%i)\n", connection_listener);
 
@@ -63,15 +67,16 @@ void serve() {
     client_len = sizeof(client_address);
 
     // Accept incoming connections from the client
-    if ((client = accept(server_socket_fd, (struct sockaddr *) &client_address, &client_len)) < SOCKET_ERROR) {
+    if ((client = accept(server_socket_fd, (struct sockaddr *) &client_address, &client_len)) <= SOCKET_ERROR) {
       perror("Error accepting on the server socket");
+      exit(errno);
     }
 
     // Receive the message
     int receiver;
-    if ((receiver = recv(client, buffer, BUFSIZE
-    -1, 0)) < SOCKET_ERROR ) {
+    if ((receiver = recv(client, buffer, BUFSIZE - 1, 0)) <= SOCKET_ERROR ) {
       perror("Error receiving message from the client");
+      exit(errno);
     }
     fprintf(stdout, "Server recieved message (%i)\n", receiver);
 
@@ -83,8 +88,9 @@ void serve() {
     strcpy(response, "This is a response string!");
     len = strlen(response);
 
-    if ((sender = send(client, response, len, 0)) < SOCKET_ERROR) {
+    if ((sender = send(client, response, len, 0)) <= SOCKET_ERROR) {
       perror("Error sending the response");
+      exit(errno);
     }
     fprintf(stdout, "Successfully sent message (%zu)", sender);
   }
